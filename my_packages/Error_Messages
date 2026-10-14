@@ -1,0 +1,18 @@
+import sys
+
+
+
+class Error_Messages  : 
+	Message_types = { 
+			"CMD_FLAGS_ERROR" : "" , 
+			"CMD_OPTIONS_ERROR" : "" 
+		   }
+
+	@classmethod
+	## [] add *args here
+	def  display_error_message(cls , Message_type ,  extra_lines , order ) :  
+		message = "" 
+		## [] handle these are xarg (  extra_lines , order) if one exitss check the next if oerder doesnt xist add  to top 
+		## craft message depending on the arguments
+		sys.exit(message) 
+
