@@ -1,15 +1,16 @@
-import vips 
 from my_packages.cmd_options_parser  import cmd_options_parser 
 from my_packages.generation_types.threshold_generation_types  import threshold_generation_types 
 from my_packages.generation_types.basic_shapes_generation_types  import basic_shapes_generation_types 
 from my_packages.generation_types.json_base_generation_types  import json_base_generation_types 
 from my_packages.refresh  import refresh 
+from my_packages.PATHHANDLER import PATHHANDLER
 
 ## to do 
  ## [] complete each generation_type 
- ## [] error handleing 
+ ## [] error handling 
 
 class Generate : 
+    PATHHANDLER.RESOLVE_SOURCE_IMAGES_DIR()
 
     RUN_MODES = {
             "t_threshold" :  threshold_generation_types , 
