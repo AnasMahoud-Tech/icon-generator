@@ -5,6 +5,7 @@ from my_packages.Error_Messages import  Error_Messages
 
 
 def validate_options_flag (flag)  : 
+    ## [] programm status 
     ## flag compability of mixing map 
     flag_chars_map = { 
                       "t"  : { "compatible_combinations" : []  } ,  
@@ -28,10 +29,10 @@ def validate_options_flag (flag)  :
 
     ## checking flag character compatibility     
     if  chosen_flag_chars_length != 1 :  
-    for current_flag_char in list(chosen_flag_chars)  : 
-        current_flag_char_compatible_combinations = flag_chars_map[current_flag_char]["compatible_combinations"]
-        if   len(current_flag_char_compatible_combinations)  == 0  or chosen_flag_chars not in   current_flag_char_compatible_combinations: 
-            return False 
+        for current_flag_char in list(chosen_flag_chars)  : 
+            current_flag_char_compatible_combinations = flag_chars_map[current_flag_char]["compatible_combinations"]
+            if   len(current_flag_char_compatible_combinations)  == 0  or chosen_flag_chars not in   current_flag_char_compatible_combinations: 
+                return False 
 
     ## check if the flag has leading dash
     if  dash_count  < 1 or  dash_count  > 1: 
@@ -43,15 +44,18 @@ def validate_options_flag (flag)  :
     return  True
 
 
-
-def validate_option (option  , flag_char_to_option_map  , flags_set , flag_char_to_label_map) : 
-    ## [] speed can be improved by changing flag_char_to_label_map  into another scheme with the type of flag as firs key e.g : { "HAS_OPTIONS" : ["t" , "b" , ...]} , "NO_OPTIONS" : [{"r" : "refresh" } , ... ] }
-    flag_with_option_support = ""  
-    for flag in flag_set  :  
+def get_flags_with_option_support(flags_set , flag_char_to_label_map ) : 
+    flags_with_option_support = [] 
+    for flag in flags_set  :  
         if flag_char_to_label_map[flag] == "HAS_OPTIONS" : 
-           flag_with_option_support  =  flag 
-    if option not  in  flag_char_to_option_map[flag_with_option_support] : 
-        return False
+           flags_with_option_support.append(flag)
+    return flags_with_option_support 
+
+def validate_option (option  , flag_char_to_option_map  , flags_with_option_support , flag_char_to_label_map) : 
+    ## [] speed can be improved by changing flag_char_to_label_map  into another scheme with the type of flag as firs key e.g : { "HAS_OPTIONS" : ["t" , "b" , ...]} , "NO_OPTIONS" : [{"r" : "refresh" } , ... ] }
+    for flag_with_option_support in flags_with_option_support : 
+        if option not  in  flag_char_to_option_map[flag_with_option_support]  or option == "": 
+            return False
     return True 
 
 
@@ -65,26 +69,30 @@ def cmd_options_parser() :
                    ]
             }
     flag_char_to_label_map = {
-            "t" : "HAS_OPTIONS" 
+            "t" : "HAS_OPTIONS"  , 
             "r" : "refresh"
             }
     ## if no flags given choose default label  
-    if (sys.argv) == 1 : 
+    if len(sys.argv) == 1 : 
         return ["t_threshold"]
     
     flag = sys.argv[1] 
     validated_flag = validate_options_flag(flag)
     if validated_flag == False  : 
         ## []  finiish the ERROR message module  
-        Error_Messages.display_error_message(cls , Error_Messages.Message_types["CMD_FLAGS_ERROR"] )
+        Error_Messages.display_error_message(Error_Messages.Message_types["CMD_FLAGS_ERROR"] )
 
     flags_set= set(flag[1:])
+    
+    flags_with_option_support = get_flags_with_option_support(flags_set , flag_char_to_label_map )
 
-    option = sys.argv[2] 
-    validated_option = validate_option(option , flag_char_to_option_map , flags_set  , flag_char_to_label_map)
-    if validated_option == False  : 
-        ## []  finiish the ERROR message module  
-        Error_Messages.display_error_message(cls , Error_Messages.Message_types["CMD_OPTIONS_ERROR"] )
+    option = ""
+    if len(flags_with_option_support)  != 0 : 
+        if len(sys.argv)  >= 3  : 
+            option = sys.argv[2] 
+        validated_option = validate_option(option , flag_char_to_option_map , flags_with_option_support  , flag_char_to_label_map)
+        if validated_option == False  : 
+            Error_Messages.display_error_message(Error_Messages.Message_types["CMD_OPTIONS_ERROR"] )
 
     labels  = []
     for flag in flags_set  : 
@@ -93,8 +101,8 @@ def cmd_options_parser() :
             ## choose the label matching the option and flag and map it to the flag
             ## it's the option because current implementation only supports one option 
             matching_label = option    
-            nested_label =  f"{flag}_{matching_label}}" 
-            labels.append(flags_label_value)  
+            nested_label =  f"{flag}_{matching_label}"  
+            labels.append(nested_label)  
             continue
         labels.append(flags_label_value)  
 
